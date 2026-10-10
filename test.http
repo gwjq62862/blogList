@@ -1,0 +1,13 @@
+### Get all blogs
+GET http://localhost:3000/api/blogs
+
+### Add a new blog
+POST http://localhost:3000/api/blogs
+Content-Type: application/json
+
+{
+  "title": "First Blog Post",
+  "author": "Hein Way Phyo",
+  "url": "https://example.com/blog-1",
+  "likes": 5
+}

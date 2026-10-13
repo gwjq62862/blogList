@@ -1,14 +1,21 @@
 import express from 'express'
 import { Blog } from '../models/blog.model.js'
+import { userExtractor } from '../utils/middleware.js'
 
 const blogsRouter = express.Router()
 
 blogsRouter.get('/', async (request, response) => {
-  const blogs = await Blog.find({})
+  const blogs = await Blog
+    .find({})
+    .populate('user', { username: 1, name: 1 })
   response.json(blogs)
 })
 
-blogsRouter.post('/', async (request, response) => {
+blogsRouter.post('/', userExtractor, async (request, response) => {
+  const user = request.user
+  if (!user) {
+    return response.status(401).json({ error: "token missing or invalid" })
+  }
   const body = request.body
   if (!body.title || !body.url) {
     return response.status(400).json({ error: 'title or url missing' })
@@ -17,7 +24,8 @@ blogsRouter.post('/', async (request, response) => {
     title: body.title,
     author: body.author,
     url: body.url,
-    likes: body.likes
+    likes: body.likes,
+    user: user._id
   })
 
   try {
@@ -31,9 +39,21 @@ blogsRouter.post('/', async (request, response) => {
 
 
 
-blogsRouter.delete('/:id', async (request, response,) => {
-
+blogsRouter.delete('/:id', userExtractor, async (request, response,) => {
+  const user = request.user
+  if (!user) {
+    return response.status(401).json({ error: "token missing or invalid" })
+  }
   try {
+    const blog = await Blog.findById(request.params.id)
+    if (!blog) {
+      return response.status(404).json({ error: 'blog not found' })
+    }
+
+
+    if (blog.user.toString() !== user._id.toString()) {
+      return response.status(403).json({ error: 'unauthorized to delete this blog' })
+    }
     await Blog.findByIdAndDelete(request.params.id)
     response.status(204).end()
   } catch (error) {

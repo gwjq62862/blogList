@@ -3,10 +3,21 @@ import mongoose from "mongoose"
 
 
 const blogSchema = mongoose.Schema({
-    title: String,
+    title: {
+        type: String,
+    required: true,
+
+    },
     author: String,
-    url: String,
-    likes: Number,
+    url: {
+        required: true,
+        type: String,
+
+    },
+    likes: {
+        type: Number,
+        default: 0
+    },
 })
 
 export const Blog = mongoose.model('Blog', blogSchema)

@@ -11,3 +11,14 @@ Content-Type: application/json
   "url": "https://example.com/blog-1",
   "likes": 5
 }
+
+
+### Register a new user
+POST http://localhost:3000/api/users/register
+Content-Type: application/json
+
+{
+  "username": "testuser",
+  "password": "testpass123",
+  "name": "Test User"
+}

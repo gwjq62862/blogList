@@ -30,6 +30,7 @@ blogsRouter.post('/', userExtractor, async (request, response) => {
 
   try {
     const savedBlog = await blog.save()
+    await savedBlog.populate('user', { username: 1, name: 1 })
     response.status(201).json(savedBlog)
   } catch (error) {
     console.error(error)
@@ -58,6 +59,8 @@ blogsRouter.delete('/:id', userExtractor, async (request, response,) => {
     response.status(204).end()
   } catch (error) {
     console.log("erorr in deleting blog", error)
+    response.status(500).json({ error: 'internal server error' })
+
   }
 })
 
@@ -84,6 +87,7 @@ blogsRouter.put('/:id', async (request, response) => {
     )
 
     if (updatedBlog) {
+     await updatedBlog.populate('user', { username: 1, name: 1 })
       response.status(200).json(updatedBlog)
     } else {
       response.status(404).json({ error: 'blog not found' })

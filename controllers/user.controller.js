@@ -3,6 +3,7 @@ import express from 'express'
 import { User } from '../models/user.models.js'
 import { JWT_SECRET } from '../utils/config.js'
 import jwt from 'jsonwebtoken'
+import { userExtractor } from '../utils/middleware.js'
 
 const usersRouter = express.Router()
 
@@ -102,6 +103,46 @@ usersRouter.post('/login', async (req, res) => {
         name: user.name
     });
 
+})
+
+
+
+usersRouter.get('/:id', userExtractor, async (req, res) => {
+    const user = req.user
+    const { id } = req.params
+    if (!user) {
+        res.status(401).json({ message: "unauthorized" })
+        return
+    }
+
+    try {
+        const exsistUser = await User.findById(id)
+        if (!exsistUser) {
+            res.status(400).json({ message: 'user not found' })
+            return
+        }
+        res.status(200).json({ user: exsistUser })
+    } catch (error) {
+        console.log('error in getting user', error)
+        res.status(500).json({ message: "Internal server error" })
+    }
+
+})
+
+usersRouter.get('/', userExtractor, async (req, res) => {
+    const user = req.user
+    if (!user) {
+        res.status(401).json({ message: "unauthorized" })
+        return
+    }
+    try {
+      
+        const users = await User.find({}).populate('blogs', { title: 1, author: 1, url: 1 })
+        res.status(200).json({ users: users })
+    } catch (error) {
+        console.log('error in getting user', error)
+        res.status(500).json({ message: "Internal server error" })
+    }
 })
 
 export default usersRouter
